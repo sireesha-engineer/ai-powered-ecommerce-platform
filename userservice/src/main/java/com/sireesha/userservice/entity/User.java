@@ -29,6 +29,20 @@ public class User {
     private Boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String userStatus;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
 
+        if(this.userStatus == null) {
+            this.userStatus = UserStatus.ACTIVE.name();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
