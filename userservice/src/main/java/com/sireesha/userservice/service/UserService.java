@@ -11,6 +11,7 @@ import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public String register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
@@ -29,7 +31,7 @@ public class UserService {
         User user = new User();
         user.setFirstName(registerUserRequest.getFirstName());
         user.setLastName(registerUserRequest.getLastName());
-        user.setPassword(registerUserRequest.getPassword());
+        user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
         user.setEmail(registerUserRequest.getEmail());
         user.setPhoneNumber(registerUserRequest.getPhoneNumber());
         user.setRole(Role.USER);
