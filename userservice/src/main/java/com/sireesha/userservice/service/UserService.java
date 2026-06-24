@@ -1,22 +1,18 @@
 package com.sireesha.userservice.service;
 
-import com.sireesha.userservice.dto.RegisterUserRequest;
-import com.sireesha.userservice.dto.UpdateUserRequest;
-import com.sireesha.userservice.dto.UserResponse;
+import com.sireesha.userservice.dto.*;
 import com.sireesha.userservice.entity.Role;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.UserAlreadyExistException;
 import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
