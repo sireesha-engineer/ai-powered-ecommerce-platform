@@ -2,6 +2,7 @@ package com.sireesha.userservice.controller;
 
 import com.sireesha.userservice.dto.RegisterUserRequest;
 import com.sireesha.userservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody RegisterUserRequest registerUserRequest) {
+    public String registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         return userService.register(registerUserRequest);
     }
 
