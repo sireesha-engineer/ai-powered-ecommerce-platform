@@ -8,6 +8,7 @@ import com.sireesha.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,19 +37,34 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getProfileUser() {
+        UserResponse userResponse = userService.getProfileUser();
+        return ResponseEntity.ok(userResponse);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
         UserResponse userResponse = userService.getUserByEmail(email);
         return ResponseEntity.ok(userResponse);
     }
 
+    @PatchMapping("me")
+    public ResponseEntity<UserResponse> updateProfileUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        UserResponse userResponse = userService.updateProfileUser(updateUserRequest);
+        return ResponseEntity.ok(userResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
+    public ResponseEntity<UserResponse> updateUserStatus(@PathVariable Long id,
                                                    @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         UserResponse userResponse = userService.updateUser(id, updateUserRequest);
         return ResponseEntity.ok(userResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteUserById(@PathVariable Long id) {
         userService.deleteUserById(id);

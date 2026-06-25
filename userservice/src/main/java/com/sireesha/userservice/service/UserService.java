@@ -9,6 +9,7 @@ import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.UserAlreadyExistException;
 import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CurrentUserService currentUserService;
 
     public String register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
@@ -78,6 +80,7 @@ public class UserService {
         if (updateUserRequest.getFirstName() != null) user.setFirstName(updateUserRequest.getFirstName());
         if (updateUserRequest.getLastName() != null) user.setLastName(updateUserRequest.getLastName());
         if (updateUserRequest.getPhoneNumber() != null) user.setPhoneNumber(updateUserRequest.getPhoneNumber());
+        if (updateUserRequest.getUserStatus() != null) user.setUserStatus(updateUserRequest.getUserStatus());
 
         userRepository.save(user);
 
@@ -90,5 +93,21 @@ public class UserService {
 
         user.setUserStatus(UserStatus.DELETED.name());
         userRepository.save(user);
+    }
+
+    public UserResponse getProfileUser() {
+       return convertToResponse(currentUserService.getCurrentUser());
+    }
+
+    public UserResponse updateProfileUser(@Valid UpdateUserRequest updateUserRequest) {
+        User user = currentUserService.getCurrentUser();
+
+        if (updateUserRequest.getFirstName() != null) user.setFirstName(updateUserRequest.getFirstName());
+        if (updateUserRequest.getLastName() != null) user.setLastName(updateUserRequest.getLastName());
+        if (updateUserRequest.getPhoneNumber() != null) user.setPhoneNumber(updateUserRequest.getPhoneNumber());
+
+        userRepository.save(user);
+
+        return convertToResponse(user);
     }
 }
