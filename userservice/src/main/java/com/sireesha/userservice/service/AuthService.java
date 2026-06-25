@@ -1,7 +1,8 @@
 package com.sireesha.userservice.service;
 
-import com.sireesha.userservice.dto.LoginRequest;
-import com.sireesha.userservice.dto.LoginResponse;
+import com.sireesha.userservice.service.token.TokenService;
+import com.sireesha.userservice.dto.response.AuthenticationResponse;
+import com.sireesha.userservice.dto.request.LoginRequest;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.AuthenticationException;
@@ -16,8 +17,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public AuthenticationResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
 
@@ -30,7 +32,7 @@ public class AuthService {
             throw new AuthenticationException("Invalid email or password");
         }
 
-        return new LoginResponse("login successful");
+        return tokenService.createAuthenticationResponse(user);
     }
 }
 

@@ -1,9 +1,9 @@
 package com.sireesha.userservice.controller;
 
-import com.sireesha.userservice.dto.RegisterUserRequest;
-import com.sireesha.userservice.dto.SuccessResponse;
-import com.sireesha.userservice.dto.UpdateUserRequest;
-import com.sireesha.userservice.dto.UserResponse;
+import com.sireesha.userservice.dto.request.RegisterUserRequest;
+import com.sireesha.userservice.dto.response.SuccessResponse;
+import com.sireesha.userservice.dto.request.UpdateUserRequest;
+import com.sireesha.userservice.dto.response.UserResponse;
 import com.sireesha.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

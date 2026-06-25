@@ -1,4 +1,4 @@
-package com.sireesha.userservice.dto;
+package com.sireesha.userservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

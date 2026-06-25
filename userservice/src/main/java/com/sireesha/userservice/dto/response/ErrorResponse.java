@@ -1,4 +1,4 @@
-package com.sireesha.userservice.dto;
+package com.sireesha.userservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class LoginResponse {
+public class ErrorResponse {
     private String message;
 }

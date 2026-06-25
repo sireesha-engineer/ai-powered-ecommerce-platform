@@ -1,5 +1,7 @@
 package com.sireesha.userservice.exception;
 
+import com.sireesha.userservice.dto.response.ErrorResponse;
+import com.sireesha.userservice.dto.response.ValidationErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,11 +15,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public List<ValidationError> handleValidationException(MethodArgumentNotValidException mex) {
+    public List<ValidationErrorResponse> handleValidationException(MethodArgumentNotValidException mex) {
         return mex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> new ValidationError(error.getField(), error.getDefaultMessage()))
+                .map(error -> new ValidationErrorResponse(error.getField(), error.getDefaultMessage()))
                 .toList();
     }
 

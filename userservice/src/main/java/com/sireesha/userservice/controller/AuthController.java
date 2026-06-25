@@ -1,8 +1,8 @@
 package com.sireesha.userservice.controller;
 
+import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.service.AuthService;
-import com.sireesha.userservice.dto.LoginRequest;
-import com.sireesha.userservice.dto.LoginResponse;
+import com.sireesha.userservice.dto.request.LoginRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +16,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        LoginResponse loginResponse = authService.login(loginRequest);
-        return ResponseEntity.ok(loginResponse);
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        AuthenticationResponse authenticationResponse = authService.login(loginRequest);
+        return ResponseEntity.ok(authenticationResponse);
     }
 }

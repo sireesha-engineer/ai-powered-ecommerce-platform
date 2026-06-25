@@ -1,6 +1,8 @@
 package com.sireesha.userservice.service;
 
-import com.sireesha.userservice.dto.*;
+import com.sireesha.userservice.dto.request.RegisterUserRequest;
+import com.sireesha.userservice.dto.request.UpdateUserRequest;
+import com.sireesha.userservice.dto.response.UserResponse;
 import com.sireesha.userservice.entity.Role;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.entity.UserStatus;
