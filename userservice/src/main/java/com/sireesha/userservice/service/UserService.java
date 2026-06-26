@@ -25,7 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
-    private final PasswordServiceImpl passwordService;
+    private final PasswordPolicyServiceImpl passwordService;
     private final TokenService tokenService;
 
     public String register(RegisterUserRequest registerUserRequest) {

@@ -1,12 +1,9 @@
 package com.sireesha.userservice.controller;
 
-import com.sireesha.userservice.dto.request.ForgotPasswordRequest;
-import com.sireesha.userservice.dto.request.LogoutRequest;
-import com.sireesha.userservice.dto.request.RefreshTokenRequest;
+import com.sireesha.userservice.dto.request.*;
 import com.sireesha.userservice.dto.response.ApiResponse;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.service.AuthService;
-import com.sireesha.userservice.dto.request.LoginRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,5 +45,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         authService.forgotPassword(forgotPasswordRequest);
         return ResponseEntity.ok(ApiResponse.success("if account exists, a password reset link has been sent"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        authService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
     }
 }

@@ -1,12 +1,11 @@
 package com.sireesha.userservice.service;
 
-import com.sireesha.userservice.dto.request.ForgotPasswordRequest;
-import com.sireesha.userservice.dto.request.LogoutRequest;
-import com.sireesha.userservice.dto.request.RefreshTokenRequest;
+import com.sireesha.userservice.dto.request.*;
+import com.sireesha.userservice.entity.PasswordResetToken;
 import com.sireesha.userservice.entity.RefreshToken;
+import com.sireesha.userservice.repository.PasswordResetTokenRepository;
 import com.sireesha.userservice.service.token.TokenService;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
-import com.sireesha.userservice.dto.request.LoginRequest;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.AuthenticationException;
@@ -28,6 +27,8 @@ public class AuthService {
     private final TokenService tokenService;
     private final CurrentUserService currentUserService;
     private final passwordResetTokenServiceImpl passwordResetTokenService;
+    private final PasswordPolicyServiceImpl passwordService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -72,6 +73,18 @@ public class AuthService {
         }
         User user = optionalUser.get();
         passwordResetTokenService.createPasswordResetToken(user);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        PasswordResetToken passwordResetToken = passwordResetTokenService.validateToken(resetPasswordRequest.getToken());
+        passwordService.validateConfirmNewPassword(resetPasswordRequest.getConfirmNewPassword(), resetPasswordRequest.getNewPassword());
+        User user = passwordResetToken.getUser();
+        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+        userRepository.save(user);
+        passwordResetToken.setUsed(true);
+        passwordResetTokenRepository.save(passwordResetToken);
+        tokenService.revokeAllByUser(user);
     }
 }
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class PasswordServiceImpl implements PasswordService {
+public class PasswordPolicyServiceImpl implements PasswordPolicyService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
