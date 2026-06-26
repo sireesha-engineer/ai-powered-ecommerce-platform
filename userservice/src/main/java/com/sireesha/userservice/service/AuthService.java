@@ -1,5 +1,6 @@
 package com.sireesha.userservice.service;
 
+import com.sireesha.userservice.dto.request.ForgotPasswordRequest;
 import com.sireesha.userservice.dto.request.LogoutRequest;
 import com.sireesha.userservice.dto.request.RefreshTokenRequest;
 import com.sireesha.userservice.entity.RefreshToken;
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final CurrentUserService currentUserService;
+    private final passwordResetTokenServiceImpl passwordResetTokenService;
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -57,6 +61,17 @@ public class AuthService {
     public void logoutAll() {
         User user = currentUserService.getCurrentUser();
         tokenService.revokeAllByUser(user);
+    }
+
+    @Transactional
+    public void forgotPassword(@Valid ForgotPasswordRequest forgotPasswordRequest) {
+        Optional<User> optionalUser = userRepository.findByEmail(forgotPasswordRequest.getEmail());
+
+        if (optionalUser.isEmpty()) {
+            return;
+        }
+        User user = optionalUser.get();
+        passwordResetTokenService.createPasswordResetToken(user);
     }
 }
 

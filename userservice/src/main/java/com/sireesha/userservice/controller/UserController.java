@@ -74,7 +74,7 @@ public class UserController {
 
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("me/change-password")
-    public ResponseEntity<ApiResponse> updateUserPassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    public ResponseEntity<ApiResponse> changeUserPassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
         userService.changePassword(changePasswordRequest);
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully"));
     }

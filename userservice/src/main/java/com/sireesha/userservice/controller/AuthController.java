@@ -1,5 +1,6 @@
 package com.sireesha.userservice.controller;
 
+import com.sireesha.userservice.dto.request.ForgotPasswordRequest;
 import com.sireesha.userservice.dto.request.LogoutRequest;
 import com.sireesha.userservice.dto.request.RefreshTokenRequest;
 import com.sireesha.userservice.dto.response.ApiResponse;
@@ -9,6 +10,7 @@ import com.sireesha.userservice.dto.request.LoginRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,5 +42,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse> logoutAll() {
         authService.logoutAll();
         return ResponseEntity.ok(ApiResponse.success("Logout from all devices"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        authService.forgotPassword(forgotPasswordRequest);
+        return ResponseEntity.ok(ApiResponse.success("if account exists, a password reset link has been sent"));
     }
 }
