@@ -1,5 +1,6 @@
 package com.sireesha.userservice.dto.request;
 
+import com.sireesha.userservice.entity.Role;
 import com.sireesha.userservice.entity.UserStatus;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -17,4 +18,5 @@ public class UpdateUserRequest {
     @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid phone number")
     private String phoneNumber;
     private String userStatus;
+    private Role role;
 }

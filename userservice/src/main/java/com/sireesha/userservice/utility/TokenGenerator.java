@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Component
 public class TokenGenerator {
-    public String generateRefreshToken(User user) {
+    public String generateToken(User user) {
         return  UUID.randomUUID().toString();
     }
 }

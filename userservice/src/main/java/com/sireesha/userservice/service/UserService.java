@@ -12,6 +12,7 @@ import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
 import com.sireesha.userservice.service.token.TokenService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class UserService {
     private final PasswordPolicyServiceImpl passwordService;
     private final TokenService tokenService;
 
-    public String register(RegisterUserRequest registerUserRequest) {
+    public void register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
             throw new UserAlreadyExistException("Email already exists");
         }
@@ -42,7 +43,6 @@ public class UserService {
         user.setIsVerified(false);
 
         userRepository.save(user);
-        return "User registered successfully";
     }
 
     public List<UserResponse> getAllUsers() {
@@ -122,5 +122,19 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
         tokenService.revokeAllByUser(user);
+    }
+
+    public void updateUserStatus(Long id, @Valid UpdateUserRequest updateUserRequest) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (updateUserRequest.getUserStatus() != null) user.setUserStatus(updateUserRequest.getUserStatus());
+        userRepository.save(user);
+    }
+
+    public void updateUserRole(Long id, @Valid UpdateUserRequest updateUserRequest) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (updateUserRequest.getRole() != null) user.setRole(updateUserRequest.getRole());
+        userRepository.save(user);
     }
 }

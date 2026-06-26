@@ -5,6 +5,7 @@ import com.sireesha.userservice.entity.PasswordResetToken;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.exception.InvalidTokenException;
 import com.sireesha.userservice.repository.PasswordResetTokenRepository;
+import com.sireesha.userservice.utility.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +18,12 @@ import java.util.UUID;
 public class passwordResetTokenServiceImpl implements passwordResetTokenService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final AppProperties appProperties;
+    private final TokenGenerator tokenGenerator;
 
     @Override
     public void createPasswordResetToken(User user) {
         passwordResetTokenRepository.deleteByUser(user);
-        String token = UUID.randomUUID().toString();
+        String token = tokenGenerator.generateToken(user);
         PasswordResetToken passwordResetToken = PasswordResetToken.builder()
                 .token(token)
                 .user(user)
