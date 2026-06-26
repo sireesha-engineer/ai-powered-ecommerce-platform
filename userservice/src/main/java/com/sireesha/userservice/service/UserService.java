@@ -2,6 +2,7 @@ package com.sireesha.userservice.service;
 
 import com.sireesha.userservice.dto.request.RegisterUserRequest;
 import com.sireesha.userservice.dto.request.UpdateUserRequest;
+import com.sireesha.userservice.dto.request.ChangePasswordRequest;
 import com.sireesha.userservice.dto.response.UserResponse;
 import com.sireesha.userservice.entity.Role;
 import com.sireesha.userservice.entity.User;
@@ -9,7 +10,8 @@ import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.UserAlreadyExistException;
 import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
-import jakarta.validation.Valid;
+import com.sireesha.userservice.service.token.TokenService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
+    private final PasswordServiceImpl passwordService;
+    private final TokenService tokenService;
 
     public String register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
@@ -99,7 +103,7 @@ public class UserService {
        return convertToResponse(currentUserService.getCurrentUser());
     }
 
-    public UserResponse updateProfileUser(@Valid UpdateUserRequest updateUserRequest) {
+    public UserResponse updateProfileUser(UpdateUserRequest updateUserRequest) {
         User user = currentUserService.getCurrentUser();
 
         if (updateUserRequest.getFirstName() != null) user.setFirstName(updateUserRequest.getFirstName());
@@ -109,5 +113,14 @@ public class UserService {
         userRepository.save(user);
 
         return convertToResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        User user = currentUserService.getCurrentUser();
+        passwordService.validatePassword(user, changePasswordRequest);
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        userRepository.save(user);
+        tokenService.revokeAllByUser(user);
     }
 }

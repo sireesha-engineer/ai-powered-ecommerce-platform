@@ -1,6 +1,8 @@
 package com.sireesha.userservice.controller;
 
 import com.sireesha.userservice.dto.request.RegisterUserRequest;
+import com.sireesha.userservice.dto.request.ChangePasswordRequest;
+import com.sireesha.userservice.dto.response.ApiResponse;
 import com.sireesha.userservice.dto.response.SuccessResponse;
 import com.sireesha.userservice.dto.request.UpdateUserRequest;
 import com.sireesha.userservice.dto.response.UserResponse;
@@ -69,4 +71,12 @@ public class UserController {
     public void deleteUserById(@PathVariable Long id) {
         userService.deleteUserById(id);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("me/change-password")
+    public ResponseEntity<ApiResponse> updateUserPassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+        userService.changePassword(changePasswordRequest);
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully"));
+    }
+
 }

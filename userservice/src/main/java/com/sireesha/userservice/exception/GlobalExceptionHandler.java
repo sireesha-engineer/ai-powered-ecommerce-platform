@@ -74,4 +74,10 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleException(ExpiredJwtException ex) {
         return new ErrorResponse(ex.getMessage());
     }
+
+    @ExceptionHandler(PasswordException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleException(PasswordException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
 }
