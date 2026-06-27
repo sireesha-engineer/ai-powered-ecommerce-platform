@@ -52,4 +52,10 @@ public class AuthController {
         authService.resetPassword(resetPasswordRequest);
         return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
     }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest) {
+        authService.verifyEmail(verifyEmailRequest);
+        return ResponseEntity.ok(ApiResponse.success("Email verification successfully"));
+    }
 }

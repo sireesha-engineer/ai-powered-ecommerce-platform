@@ -4,9 +4,7 @@ import com.sireesha.userservice.dto.request.RegisterUserRequest;
 import com.sireesha.userservice.dto.request.UpdateUserRequest;
 import com.sireesha.userservice.dto.request.ChangePasswordRequest;
 import com.sireesha.userservice.dto.response.UserResponse;
-import com.sireesha.userservice.entity.Role;
-import com.sireesha.userservice.entity.User;
-import com.sireesha.userservice.entity.UserStatus;
+import com.sireesha.userservice.entity.*;
 import com.sireesha.userservice.exception.UserAlreadyExistException;
 import com.sireesha.userservice.exception.UserNotFoundException;
 import com.sireesha.userservice.repository.UserRepository;
@@ -26,8 +24,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
-    private final PasswordPolicyServiceImpl passwordService;
+    private final PasswordPolicyService passwordService;
     private final TokenService tokenService;
+    private EmailService emailService;
 
     public void register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
@@ -43,6 +42,9 @@ public class UserService {
         user.setIsVerified(false);
 
         userRepository.save(user);
+
+        UserToken userToken = tokenService.createEmailVerificationToken(user, TokenType.EMAIL_VERIFICATION.name());
+        emailService.sendEmailVerificationToken(userToken);
     }
 
     public List<UserResponse> getAllUsers() {
@@ -118,7 +120,9 @@ public class UserService {
     @Transactional
     public void changePassword(ChangePasswordRequest changePasswordRequest) {
         User user = currentUserService.getCurrentUser();
-        passwordService.validatePassword(user, changePasswordRequest);
+        passwordService.validateOldPassword(user, changePasswordRequest.getOldPassword());
+        passwordService.validateNewPassword(user, changePasswordRequest.getNewPassword());
+        passwordService.validateConfirmNewPassword(changePasswordRequest.getConfirmNewPassword(), changePasswordRequest.getNewPassword());
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
         tokenService.revokeAllByUser(user);

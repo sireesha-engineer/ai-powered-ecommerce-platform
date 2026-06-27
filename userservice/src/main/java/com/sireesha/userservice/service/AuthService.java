@@ -1,6 +1,7 @@
 package com.sireesha.userservice.service;
 
 import com.sireesha.userservice.dto.request.*;
+import com.sireesha.userservice.entity.TokenType;
 import com.sireesha.userservice.entity.UserToken;
 import com.sireesha.userservice.repository.UserTokenRepository;
 import com.sireesha.userservice.service.token.TokenService;
@@ -25,8 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final CurrentUserService currentUserService;
-    private final passwordResetTokenServiceImpl passwordResetTokenService;
-    private final PasswordPolicyServiceImpl passwordService;
+    private final PasswordPolicyService passwordService;
     private final UserTokenRepository userTokenRepository;
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
@@ -71,12 +71,12 @@ public class AuthService {
             return;
         }
         User user = optionalUser.get();
-        passwordResetTokenService.createPasswordResetToken(user);
+        tokenService.createPasswordResetToken(user);
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        UserToken passwordResetToken = passwordResetTokenService.validateToken(resetPasswordRequest.getToken());
+        UserToken passwordResetToken = tokenService.validateToken(resetPasswordRequest.getToken(), TokenType.RESET_TOKEN.name());
         passwordService.validateConfirmNewPassword(resetPasswordRequest.getConfirmNewPassword(), resetPasswordRequest.getNewPassword());
         User user = passwordResetToken.getUser();
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
@@ -84,6 +84,20 @@ public class AuthService {
         passwordResetToken.setUsed(true);
         userTokenRepository.save(passwordResetToken);
         tokenService.revokeAllByUser(user);
+    }
+
+    @Transactional
+    public void verifyEmail(VerifyEmailRequest verifyEmailRequest) {
+        UserToken userToken = userTokenRepository.findByTokenAndTokenType(verifyEmailRequest.getToken(), TokenType.EMAIL_VERIFICATION.name())
+                .orElseThrow(() -> new AuthenticationException("Token not found"));
+        User user = userToken.getUser();
+        if (user.isVerified()) {
+            throw new AuthenticationException("Email already verified");
+        }
+        user.setVerified(true);
+        userRepository.save(user);
+        userToken.setUsed(true);
+        userTokenRepository.save(userToken);
     }
 }
 

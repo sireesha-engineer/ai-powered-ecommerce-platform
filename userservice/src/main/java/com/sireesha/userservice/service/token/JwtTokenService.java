@@ -6,6 +6,7 @@ import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.*;
 import com.sireesha.userservice.exception.InvalidTokenException;
 import com.sireesha.userservice.repository.UserTokenRepository;
+import com.sireesha.userservice.service.PasswordPolicyService;
 import com.sireesha.userservice.utility.TokenGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,6 +27,8 @@ public class JwtTokenService implements TokenService {
     private final JwtProperties jwtProperties;
     private final UserTokenRepository userTokenRepository;
     private final TokenGenerator tokenGenerator;
+    private final PasswordPolicyService passwordPolicyService;
+    private final AppProperties appProperties;
 
     public SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
@@ -112,16 +115,9 @@ public class JwtTokenService implements TokenService {
     public UserToken validateRefreshToken(String token) {
         UserToken refreshToken = userTokenRepository.findByTokenAndTokenType(token, TokenType.REFRESH_TOKEN.name())
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
-        if (refreshToken.isUsed()) {
-            throw new InvalidTokenException("refresh token has been used");
-        }
-        if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new InvalidTokenException("refresh token has expired");
-        }
-        User user = refreshToken.getUser();
-        if (!Objects.equals(user.getUserStatus(), UserStatus.ACTIVE.name())) {
-            throw new InvalidTokenException("User is not active");
-        }
+        passwordPolicyService.validateTokenUsage(refreshToken);
+        passwordPolicyService.validateTokenExpiry(refreshToken);
+        passwordPolicyService.validateActiveUserToken(refreshToken);
         return refreshToken;
     }
 
@@ -144,5 +140,32 @@ public class JwtTokenService implements TokenService {
     @Transactional()
     public void revokeAllByUser(User user) {
         userTokenRepository.revokeAllByUser(user);
+    }
+
+    @Override
+    public void createPasswordResetToken(User user) {
+        userTokenRepository.deleteByUser(user, TokenType.RESET_TOKEN);
+        String token = tokenGenerator.generateToken(user);
+        UserToken passwordResetToken = UserToken.builder()
+                .token(token)
+                .tokenType(TokenType.RESET_TOKEN.name())
+                .user(user)
+                .expiresAt(LocalDateTime.now().plusMinutes(appProperties.getPasswordResetExpiryMinutes()))
+                .build();
+        userTokenRepository.save(passwordResetToken);
+    }
+
+    @Override
+    public UserToken validateToken(String token, String tokenType) {
+        UserToken userToken = userTokenRepository.findByTokenAndTokenType(token, tokenType)
+                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
+        passwordPolicyService.validateTokenUsage(userToken);
+        passwordPolicyService.validateTokenExpiry(userToken);
+        return userToken;
+    }
+
+    @Override
+    public UserToken createEmailVerificationToken(User user, String tokenType) {
+        return null;
     }
 }

@@ -1,10 +1,7 @@
 package com.sireesha.userservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name="users")
 public class User {
@@ -30,6 +28,9 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String userStatus;
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean verified = false;
 
     @PrePersist
     public void prePersist() {

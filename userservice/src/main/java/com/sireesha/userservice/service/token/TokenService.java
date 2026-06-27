@@ -29,5 +29,8 @@ public interface TokenService {
     UserToken rotateRefreshToken(UserToken refreshToken);
     void revokeRefreshToken(LogoutRequest refreshToken);
     void revokeAllByUser(User user);
+    void createPasswordResetToken(User user);
+    UserToken validateToken(String token, String tokenType);
 
+    UserToken createEmailVerificationToken(User user, String tokenType);
 }

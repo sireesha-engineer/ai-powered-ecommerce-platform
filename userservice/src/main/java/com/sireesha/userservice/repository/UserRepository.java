@@ -1,6 +1,7 @@
 package com.sireesha.userservice.repository;
 
 import com.sireesha.userservice.entity.User;
+import com.sireesha.userservice.entity.UserToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
