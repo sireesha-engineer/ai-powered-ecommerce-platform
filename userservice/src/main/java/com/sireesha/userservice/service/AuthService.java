@@ -3,6 +3,7 @@ package com.sireesha.userservice.service;
 import com.sireesha.userservice.dto.request.*;
 import com.sireesha.userservice.entity.TokenType;
 import com.sireesha.userservice.entity.UserToken;
+import com.sireesha.userservice.exception.InvalidTokenException;
 import com.sireesha.userservice.repository.UserTokenRepository;
 import com.sireesha.userservice.service.token.TokenService;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
@@ -33,7 +34,7 @@ public class AuthService {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
 
-        if (user.getUserStatus().contains(UserStatus.DELETED.name())) {
+        if (user.getUserStatus().equals(UserStatus.DELETED)) {
             throw new AuthenticationException("Invalid email or password");
         }
 
@@ -42,19 +43,33 @@ public class AuthService {
             throw new AuthenticationException("Invalid email or password");
         }
 
+        if (!user.isVerified()) {
+            throw new AuthenticationException("Please verify your email before logging in");
+        }
+
         return tokenService.createAuthenticationResponse(user);
     }
 
     @Transactional
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        UserToken oldRefreshToken = tokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
-        User user = oldRefreshToken.getUser();
-        return tokenService.createAuthenticationResponse(user, oldRefreshToken);
+        UserToken refreshToken = userTokenRepository.findByTokenAndTokenType(refreshTokenRequest.getRefreshToken(), TokenType.REFRESH_TOKEN)
+                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
+        passwordService.validateTokenUsage(refreshToken);
+        passwordService.validateTokenExpiry(refreshToken);
+        passwordService.validateActiveUserToken(refreshToken);
+        User user = refreshToken.getUser();
+        return tokenService.createAuthenticationResponse(user, refreshToken);
     }
 
     @Transactional
     public void logout(@Valid LogoutRequest logoutRequest) {
-       tokenService.revokeRefreshToken(logoutRequest);
+        UserToken refreshToken = userTokenRepository.findByTokenAndTokenType(logoutRequest.getRefreshToken(), TokenType.REFRESH_TOKEN)
+                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
+        passwordService.validateTokenUsage(refreshToken);
+        passwordService.validateTokenExpiry(refreshToken);
+        passwordService.validateActiveUserToken(refreshToken);
+        refreshToken.setUsed(true);
+        userTokenRepository.save(refreshToken);
     }
 
     @Transactional
@@ -76,19 +91,22 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        UserToken passwordResetToken = tokenService.validateToken(resetPasswordRequest.getToken(), TokenType.RESET_TOKEN.name());
+        UserToken userToken = userTokenRepository.findByTokenAndTokenType(resetPasswordRequest.getToken(), TokenType.RESET_TOKEN)
+                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
+        passwordService.validateTokenUsage(userToken);
+        passwordService.validateTokenExpiry(userToken);
         passwordService.validateConfirmNewPassword(resetPasswordRequest.getConfirmNewPassword(), resetPasswordRequest.getNewPassword());
-        User user = passwordResetToken.getUser();
+        User user = userToken.getUser();
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
         userRepository.save(user);
-        passwordResetToken.setUsed(true);
-        userTokenRepository.save(passwordResetToken);
+        userToken.setUsed(true);
+        userTokenRepository.save(userToken);
         tokenService.revokeAllByUser(user);
     }
 
     @Transactional
     public void verifyEmail(VerifyEmailRequest verifyEmailRequest) {
-        UserToken userToken = userTokenRepository.findByTokenAndTokenType(verifyEmailRequest.getToken(), TokenType.EMAIL_VERIFICATION.name())
+        UserToken userToken = userTokenRepository.findByTokenAndTokenType(verifyEmailRequest.getToken(), TokenType.EMAIL_VERIFICATION)
                 .orElseThrow(() -> new AuthenticationException("Token not found"));
         User user = userToken.getUser();
         if (user.isVerified()) {

@@ -55,7 +55,7 @@ public class PasswordPolicyServiceImpl implements PasswordPolicyService {
     @Override
     public void validateActiveUserToken(UserToken userToken) {
         User user = userToken.getUser();
-        if (!Objects.equals(user.getUserStatus(), UserStatus.ACTIVE.name())) {
+        if (user.getUserStatus().equals(UserStatus.ACTIVE)) {
             throw new InvalidTokenException("User is not active");
         }
     }

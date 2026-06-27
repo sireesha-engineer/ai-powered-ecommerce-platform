@@ -19,7 +19,8 @@ public class UserToken extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String token;
     @Column(nullable = false)
-    private String tokenType;
+    @Enumerated(EnumType.STRING)
+    private TokenType tokenType;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

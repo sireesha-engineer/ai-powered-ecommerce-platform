@@ -26,8 +26,9 @@ public class UserService {
     private final CurrentUserService currentUserService;
     private final PasswordPolicyService passwordService;
     private final TokenService tokenService;
-    private EmailService emailService;
+    private final EmailService emailService;
 
+    @Transactional
     public void register(RegisterUserRequest registerUserRequest) {
         if (userRepository.existsByEmail(registerUserRequest.getEmail())) {
             throw new UserAlreadyExistException("Email already exists");
@@ -43,12 +44,12 @@ public class UserService {
 
         userRepository.save(user);
 
-        UserToken userToken = tokenService.createEmailVerificationToken(user, TokenType.EMAIL_VERIFICATION.name());
+        UserToken userToken = tokenService.createEmailVerificationToken(user, TokenType.EMAIL_VERIFICATION);
         emailService.sendEmailVerificationToken(userToken);
     }
 
     public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findByUserStatus(UserStatus.ACTIVE.name());
+        List<User> users = userRepository.findByUserStatus(UserStatus.ACTIVE);
         List<UserResponse> userResponses = new ArrayList<>();
         for (User user : users) {
             UserResponse userResponse = convertToResponse(user);
@@ -97,7 +98,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        user.setUserStatus(UserStatus.DELETED.name());
+        user.setUserStatus(UserStatus.DELETED);
         userRepository.save(user);
     }
 

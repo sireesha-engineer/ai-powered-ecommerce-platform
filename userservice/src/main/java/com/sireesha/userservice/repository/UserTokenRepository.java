@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
-    Optional<UserToken> findByTokenAndTokenType(String token, String tokenType);
+    Optional<UserToken> findByTokenAndTokenType(String token, TokenType tokenType);
     List<UserToken> findByUser(User user);
     void deleteByUser(User user, TokenType resetToken);
     void deleteByToken(String token);

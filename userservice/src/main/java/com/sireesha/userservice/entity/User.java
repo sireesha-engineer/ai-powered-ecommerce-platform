@@ -27,7 +27,8 @@ public class User {
     private Boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String userStatus;
+    @Enumerated(EnumType.STRING)
+    private UserStatus userStatus;
     @Column(nullable = false)
     @Builder.Default
     private boolean verified = false;
@@ -38,7 +39,7 @@ public class User {
         this.updatedAt = LocalDateTime.now();
 
         if(this.userStatus == null) {
-            this.userStatus = UserStatus.ACTIVE.name();
+            this.userStatus = UserStatus.ACTIVE;
         }
     }
 

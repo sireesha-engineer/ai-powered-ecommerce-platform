@@ -4,9 +4,7 @@ import com.sireesha.userservice.config.JwtProperties;
 import com.sireesha.userservice.dto.request.LogoutRequest;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.*;
-import com.sireesha.userservice.exception.InvalidTokenException;
 import com.sireesha.userservice.repository.UserTokenRepository;
-import com.sireesha.userservice.service.PasswordPolicyService;
 import com.sireesha.userservice.utility.TokenGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +24,6 @@ public class JwtTokenService implements TokenService {
     private final JwtProperties jwtProperties;
     private final UserTokenRepository userTokenRepository;
     private final TokenGenerator tokenGenerator;
-    private final PasswordPolicyService passwordPolicyService;
     private final AppProperties appProperties;
 
     public SecretKey getSigningKey() {
@@ -105,20 +101,9 @@ public class JwtTokenService implements TokenService {
         UserToken refreshToken = new UserToken();
         refreshToken.setUser(user);
         refreshToken.setToken(tokenGenerator.generateToken(user));
-        refreshToken.setTokenType(TokenType.REFRESH_TOKEN.name());
-        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(jwtProperties.getRefreshTokenExpiration()/1000));
+        refreshToken.setTokenType(TokenType.REFRESH_TOKEN);
+        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(jwtProperties.getRefreshTokenExpiration() / 1000));
         return userTokenRepository.save(refreshToken);
-    }
-
-    @Override
-    @Transactional()
-    public UserToken validateRefreshToken(String token) {
-        UserToken refreshToken = userTokenRepository.findByTokenAndTokenType(token, TokenType.REFRESH_TOKEN.name())
-                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
-        passwordPolicyService.validateTokenUsage(refreshToken);
-        passwordPolicyService.validateTokenExpiry(refreshToken);
-        passwordPolicyService.validateActiveUserToken(refreshToken);
-        return refreshToken;
     }
 
     @Override
@@ -127,13 +112,6 @@ public class JwtTokenService implements TokenService {
         oldRefreshToken.setUsed(true);
         userTokenRepository.save(oldRefreshToken);
         return createRefreshToken(oldRefreshToken.getUser());
-    }
-
-    @Override
-    public void revokeRefreshToken(LogoutRequest logoutRequest) {
-        UserToken refreshToken = validateRefreshToken(logoutRequest.getRefreshToken());
-        refreshToken.setUsed(true);
-        userTokenRepository.save(refreshToken);
     }
 
     @Override
@@ -148,7 +126,7 @@ public class JwtTokenService implements TokenService {
         String token = tokenGenerator.generateToken(user);
         UserToken passwordResetToken = UserToken.builder()
                 .token(token)
-                .tokenType(TokenType.RESET_TOKEN.name())
+                .tokenType(TokenType.RESET_TOKEN)
                 .user(user)
                 .expiresAt(LocalDateTime.now().plusMinutes(appProperties.getPasswordResetExpiryMinutes()))
                 .build();
@@ -156,16 +134,15 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public UserToken validateToken(String token, String tokenType) {
-        UserToken userToken = userTokenRepository.findByTokenAndTokenType(token, tokenType)
-                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
-        passwordPolicyService.validateTokenUsage(userToken);
-        passwordPolicyService.validateTokenExpiry(userToken);
-        return userToken;
-    }
-
-    @Override
-    public UserToken createEmailVerificationToken(User user, String tokenType) {
-        return null;
+    public UserToken createEmailVerificationToken(User user, TokenType tokenType) {
+        String token = tokenGenerator.generateToken(user);
+        UserToken emailVerifyToken = UserToken.builder()
+                .token(token)
+                .tokenType(TokenType.EMAIL_VERIFICATION)
+                .user(user)
+                .expiresAt(LocalDateTime.now().plusMinutes(appProperties.getPasswordResetExpiryMinutes()))
+                .build();
+        userTokenRepository.save(emailVerifyToken);
+        return emailVerifyToken;
     }
 }

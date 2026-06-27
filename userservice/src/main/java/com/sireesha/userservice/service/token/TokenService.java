@@ -3,6 +3,7 @@ package com.sireesha.userservice.service.token;
 import com.sireesha.userservice.dto.request.LogoutRequest;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.Role;
+import com.sireesha.userservice.entity.TokenType;
 import com.sireesha.userservice.entity.User;
 import com.sireesha.userservice.entity.UserToken;
 import io.jsonwebtoken.Claims;
@@ -25,12 +26,8 @@ public interface TokenService {
     AuthenticationResponse createAuthenticationResponse(User user);
     AuthenticationResponse createAuthenticationResponse(User user, UserToken refreshToken);
     UserToken createRefreshToken(User user);
-    UserToken validateRefreshToken(String token);
     UserToken rotateRefreshToken(UserToken refreshToken);
-    void revokeRefreshToken(LogoutRequest refreshToken);
     void revokeAllByUser(User user);
     void createPasswordResetToken(User user);
-    UserToken validateToken(String token, String tokenType);
-
-    UserToken createEmailVerificationToken(User user, String tokenType);
+    UserToken createEmailVerificationToken(User user, TokenType tokenType);
 }
