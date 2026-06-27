@@ -8,9 +8,9 @@ import com.sireesha.userservice.repository.UserTokenRepository;
 import com.sireesha.userservice.service.token.TokenService;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.User;
-import com.sireesha.userservice.entity.UserStatus;
 import com.sireesha.userservice.exception.AuthenticationException;
 import com.sireesha.userservice.repository.UserRepository;
+import com.sireesha.userservice.utility.Helper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,24 +29,15 @@ public class AuthService {
     private final CurrentUserService currentUserService;
     private final PasswordPolicyService passwordService;
     private final UserTokenRepository userTokenRepository;
+    private final Helper helper;
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
-
-        if (user.getUserStatus().equals(UserStatus.DELETED)) {
-            throw new AuthenticationException("Invalid email or password");
-        }
-
-        boolean isValidPassword = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-        if (!isValidPassword) {
-            throw new AuthenticationException("Invalid email or password");
-        }
-
-        if (!user.isVerified()) {
-            throw new AuthenticationException("Please verify your email before logging in");
-        }
-
+        helper.validateAccountStatus(user);
+        helper.validateAccountNotVerification(user);
+        helper.validateAccountLock(user);
+        helper.validateAccountLogin(loginRequest, user);
         return tokenService.createAuthenticationResponse(user);
     }
 
@@ -109,9 +100,7 @@ public class AuthService {
         UserToken userToken = userTokenRepository.findByTokenAndTokenType(verifyEmailRequest.getToken(), TokenType.EMAIL_VERIFICATION)
                 .orElseThrow(() -> new AuthenticationException("Token not found"));
         User user = userToken.getUser();
-        if (user.isVerified()) {
-            throw new AuthenticationException("Email already verified");
-        }
+        helper.validateAccountVerification(user);
         userToken.setUsed(true);
         userTokenRepository.save(userToken);
         user.setVerified(true);
@@ -125,9 +114,7 @@ public class AuthService {
             return;
         }
         User user = optionalUser.get();
-        if (user.isVerified()) {
-            throw new AuthenticationException("Email already verified");
-        }
+        helper.validateAccountVerification(user);
         tokenService.createEmailVerificationToken(user, TokenType.EMAIL_VERIFICATION);
     }
 }

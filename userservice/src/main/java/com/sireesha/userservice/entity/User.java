@@ -32,6 +32,10 @@ public class User {
     @Column(nullable = false)
     @Builder.Default
     private boolean verified = false;
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+    private LocalDateTime accountLockedUntil;
 
     @PrePersist
     public void prePersist() {

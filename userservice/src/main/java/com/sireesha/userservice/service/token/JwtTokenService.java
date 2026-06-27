@@ -1,10 +1,10 @@
 package com.sireesha.userservice.service.token;
 
 import com.sireesha.userservice.config.JwtProperties;
-import com.sireesha.userservice.dto.request.LogoutRequest;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.*;
 import com.sireesha.userservice.repository.UserTokenRepository;
+import com.sireesha.userservice.utility.AppProperties;
 import com.sireesha.userservice.utility.TokenGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
