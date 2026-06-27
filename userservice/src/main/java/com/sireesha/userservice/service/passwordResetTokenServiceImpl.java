@@ -1,40 +1,40 @@
 package com.sireesha.userservice.service;
 
 import com.sireesha.userservice.entity.AppProperties;
-import com.sireesha.userservice.entity.PasswordResetToken;
+import com.sireesha.userservice.entity.TokenType;
 import com.sireesha.userservice.entity.User;
+import com.sireesha.userservice.entity.UserToken;
 import com.sireesha.userservice.exception.InvalidTokenException;
-import com.sireesha.userservice.repository.PasswordResetTokenRepository;
+import com.sireesha.userservice.repository.UserTokenRepository;
 import com.sireesha.userservice.utility.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class passwordResetTokenServiceImpl implements passwordResetTokenService {
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final UserTokenRepository userTokenRepository;
     private final AppProperties appProperties;
     private final TokenGenerator tokenGenerator;
 
     @Override
     public void createPasswordResetToken(User user) {
-        passwordResetTokenRepository.deleteByUser(user);
+        userTokenRepository.deleteByUser(user, TokenType.RESET_TOKEN);
         String token = tokenGenerator.generateToken(user);
-        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+        UserToken passwordResetToken = UserToken.builder()
                 .token(token)
+                .tokenType(TokenType.RESET_TOKEN.name())
                 .user(user)
                 .expiresAt(LocalDateTime.now().plusMinutes(appProperties.getPasswordResetExpiryMinutes()))
                 .build();
-        passwordResetTokenRepository.save(passwordResetToken);
+        userTokenRepository.save(passwordResetToken);
     }
 
     @Override
-    public PasswordResetToken validateToken(String token) {
-        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+    public UserToken validateToken(String token) {
+        UserToken passwordResetToken = userTokenRepository.findByTokenAndTokenType(token, TokenType.RESET_TOKEN.name())
                 .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
         if (passwordResetToken.isUsed()) {
             throw new InvalidTokenException("Token has been used");

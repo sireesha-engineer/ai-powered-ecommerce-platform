@@ -1,9 +1,8 @@
 package com.sireesha.userservice.service;
 
 import com.sireesha.userservice.dto.request.*;
-import com.sireesha.userservice.entity.PasswordResetToken;
-import com.sireesha.userservice.entity.RefreshToken;
-import com.sireesha.userservice.repository.PasswordResetTokenRepository;
+import com.sireesha.userservice.entity.UserToken;
+import com.sireesha.userservice.repository.UserTokenRepository;
 import com.sireesha.userservice.service.token.TokenService;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
 import com.sireesha.userservice.entity.User;
@@ -28,7 +27,7 @@ public class AuthService {
     private final CurrentUserService currentUserService;
     private final passwordResetTokenServiceImpl passwordResetTokenService;
     private final PasswordPolicyServiceImpl passwordService;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final UserTokenRepository userTokenRepository;
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -48,7 +47,7 @@ public class AuthService {
 
     @Transactional
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        RefreshToken oldRefreshToken = tokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
+        UserToken oldRefreshToken = tokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
         User user = oldRefreshToken.getUser();
         return tokenService.createAuthenticationResponse(user, oldRefreshToken);
     }
@@ -77,13 +76,13 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        PasswordResetToken passwordResetToken = passwordResetTokenService.validateToken(resetPasswordRequest.getToken());
+        UserToken passwordResetToken = passwordResetTokenService.validateToken(resetPasswordRequest.getToken());
         passwordService.validateConfirmNewPassword(resetPasswordRequest.getConfirmNewPassword(), resetPasswordRequest.getNewPassword());
         User user = passwordResetToken.getUser();
         user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
         userRepository.save(user);
         passwordResetToken.setUsed(true);
-        passwordResetTokenRepository.save(passwordResetToken);
+        userTokenRepository.save(passwordResetToken);
         tokenService.revokeAllByUser(user);
     }
 }

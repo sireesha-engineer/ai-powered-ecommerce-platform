@@ -1,9 +1,9 @@
 package com.sireesha.userservice.service;
 
-import com.sireesha.userservice.entity.PasswordResetToken;
 import com.sireesha.userservice.entity.User;
+import com.sireesha.userservice.entity.UserToken;
 
 public interface passwordResetTokenService {
     void createPasswordResetToken(User user);
-    PasswordResetToken validateToken(String token);
+    UserToken validateToken(String token);
 }
