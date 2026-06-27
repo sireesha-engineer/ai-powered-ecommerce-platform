@@ -3,11 +3,15 @@ package com.sireesha.userservice.controller;
 import com.sireesha.userservice.dto.request.*;
 import com.sireesha.userservice.dto.response.ApiResponse;
 import com.sireesha.userservice.dto.response.AuthenticationResponse;
+import com.sireesha.userservice.dto.response.RefreshResponse;
+import com.sireesha.userservice.dto.response.UserSessionResponse;
 import com.sireesha.userservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,9 +27,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        AuthenticationResponse authenticationResponse = authService.refreshToken(refreshTokenRequest);
-        return ResponseEntity.ok(authenticationResponse);
+    public ResponseEntity<RefreshResponse> refreshToken(@Valid @RequestBody UserSessionRequest userSessionRequest) {
+        RefreshResponse refreshResponse = authService.refreshToken(userSessionRequest);
+        return ResponseEntity.ok(refreshResponse);
     }
 
     @PostMapping("/logout")

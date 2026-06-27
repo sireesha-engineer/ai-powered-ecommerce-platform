@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
+public class UserSessionRequest {
     @NotBlank(message = "Refresh token must not be blank")
     private String refreshToken;
 }

@@ -20,5 +20,5 @@ public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
 
     @Modifying
     @Query("UPDATE UserToken ut SET ut.used = true WHERE ut.user = :user")
-    void revokeAllByUser(User user);
+    void revokeAllUsers(User user);
 }

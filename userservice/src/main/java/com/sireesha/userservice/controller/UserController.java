@@ -5,6 +5,8 @@ import com.sireesha.userservice.dto.request.ChangePasswordRequest;
 import com.sireesha.userservice.dto.response.ApiResponse;
 import com.sireesha.userservice.dto.request.UpdateUserRequest;
 import com.sireesha.userservice.dto.response.UserResponse;
+import com.sireesha.userservice.dto.response.UserSessionResponse;
+import com.sireesha.userservice.service.AuthService;
 import com.sireesha.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
@@ -96,4 +99,8 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully"));
     }
 
+    @GetMapping("/me/sessions")
+    public ResponseEntity<List<UserSessionResponse>> getActiveSessions() {
+        return ResponseEntity.ok(authService.getActiveSessions());
+    }
 }

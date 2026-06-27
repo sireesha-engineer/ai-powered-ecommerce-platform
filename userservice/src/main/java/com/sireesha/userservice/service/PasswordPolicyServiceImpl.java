@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -39,23 +38,22 @@ public class PasswordPolicyServiceImpl implements PasswordPolicyService {
     }
 
     @Override
-    public void validateTokenUsage(UserToken userToken) {
-        if (userToken.isUsed()) {
+    public void validateTokenUsage(boolean isUsed) {
+        if (isUsed) {
             throw new InvalidTokenException("Token has been used");
         }
     }
 
     @Override
-    public void validateTokenExpiry(UserToken userToken) {
-        if (userToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+    public void validateTokenExpiry(LocalDateTime expiryTime) {
+        if (expiryTime.isBefore(LocalDateTime.now())) {
             throw new InvalidTokenException("Token has expired");
         }
     }
 
     @Override
-    public void validateActiveUserToken(UserToken userToken) {
-        User user = userToken.getUser();
-        if (user.getUserStatus().equals(UserStatus.ACTIVE)) {
+    public void validateActiveUserToken(User user) {
+        if (!UserStatus.ACTIVE.equals(user.getUserStatus())) {
             throw new InvalidTokenException("User is not active");
         }
     }
