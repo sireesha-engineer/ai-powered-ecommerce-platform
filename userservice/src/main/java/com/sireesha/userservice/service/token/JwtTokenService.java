@@ -135,6 +135,7 @@ public class JwtTokenService implements TokenService {
 
     @Override
     public UserToken createEmailVerificationToken(User user, TokenType tokenType) {
+        userTokenRepository.deleteByUser(user, tokenType);
         String token = tokenGenerator.generateToken(user);
         UserToken emailVerifyToken = UserToken.builder()
                 .token(token)

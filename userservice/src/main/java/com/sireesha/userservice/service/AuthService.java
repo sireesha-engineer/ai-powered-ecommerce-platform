@@ -79,8 +79,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void forgotPassword(@Valid ForgotPasswordRequest forgotPasswordRequest) {
-        Optional<User> optionalUser = userRepository.findByEmail(forgotPasswordRequest.getEmail());
+    public void forgotPassword(@Valid AccountRecoveryRequest accountRecoveryRequest) {
+        Optional<User> optionalUser = userRepository.findByEmail(accountRecoveryRequest.getEmail());
 
         if (optionalUser.isEmpty()) {
             return;
@@ -112,10 +112,23 @@ public class AuthService {
         if (user.isVerified()) {
             throw new AuthenticationException("Email already verified");
         }
-        user.setVerified(true);
-        userRepository.save(user);
         userToken.setUsed(true);
         userTokenRepository.save(userToken);
+        user.setVerified(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void verifyResentEmail(@Valid AccountRecoveryRequest accountRecoveryRequest) {
+        Optional<User> optionalUser = userRepository.findByEmail(accountRecoveryRequest.getEmail());
+        if (optionalUser.isEmpty()) {
+            return;
+        }
+        User user = optionalUser.get();
+        if (user.isVerified()) {
+            throw new AuthenticationException("Email already verified");
+        }
+        tokenService.createEmailVerificationToken(user, TokenType.EMAIL_VERIFICATION);
     }
 }
 

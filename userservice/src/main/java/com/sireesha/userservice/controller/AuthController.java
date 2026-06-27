@@ -7,7 +7,6 @@ import com.sireesha.userservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,8 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        authService.forgotPassword(forgotPasswordRequest);
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody AccountRecoveryRequest accountRecoveryRequest) {
+        authService.forgotPassword(accountRecoveryRequest);
         return ResponseEntity.ok(ApiResponse.success("if account exists, a password reset link has been sent"));
     }
 
@@ -57,5 +56,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest) {
         authService.verifyEmail(verifyEmailRequest);
         return ResponseEntity.ok(ApiResponse.success("Email verification successfully"));
+    }
+
+    @PostMapping("/resend-verification-email")
+    public ResponseEntity<ApiResponse> verifyEmail(@Valid @RequestBody AccountRecoveryRequest accountRecoveryRequest) {
+        authService.verifyResentEmail(accountRecoveryRequest);
+        return ResponseEntity.ok(ApiResponse.success("If account exists, a verification email has been sent."));
     }
 }
