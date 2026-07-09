@@ -1,6 +1,7 @@
 package com.sireesha.productservice.controller;
 
 import com.sireesha.productservice.dto.request.CreateProductRequest;
+import com.sireesha.productservice.dto.request.ProductFilterRequest;
 import com.sireesha.productservice.dto.request.UpdateProductRequest;
 import com.sireesha.productservice.dto.response.PageResponse;
 import com.sireesha.productservice.dto.response.ProductResponse;
@@ -70,5 +71,18 @@ public class ProductController {
         productService.deleteProduct(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<PageResponse<ProductResponse>> filterProducts(
+            ProductFilterRequest request,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        return ResponseEntity.ok(productService.filterProducts(request, pageable));
     }
 }
