@@ -4,9 +4,13 @@ import com.sireesha.productservice.dto.request.CreateProductRequest;
 import com.sireesha.productservice.dto.request.UpdateProductRequest;
 import com.sireesha.productservice.dto.response.PageResponse;
 import com.sireesha.productservice.dto.response.ProductResponse;
+import com.sireesha.productservice.exception.BusinessException;
 import com.sireesha.productservice.service.ProductService;
+import com.sireesha.productservice.utils.Constants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -37,11 +41,17 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<PageResponse<ProductResponse>> getAllProducts(
-            @PageableDefault(
-            page = 0,
-            size = 10,
-            sort = "createdAt",
-            direction = Sort.Direction.DESC) Pageable pageable) {
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String direction){
+        if (!Constants.PRODUCT_ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new BusinessException("Invalid sort field: " + sortBy);
+        }
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page,
+                size, sort);
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
